@@ -1,7 +1,7 @@
 # Learning Activity 2: All Permutations of Names
 
 **Author:** Bahareh Mohamadtaheri  
-**Course:** DATA 5010 — Introduction to Data Science Programming  
+**Course:** DATA/CS 5010 — Introduction to Data Science Programming  
 **University:** Bowling Green State University
 
 ## Overview
@@ -113,7 +113,7 @@ The nested helper `try_choice(i)` selects `remaining[i]`, creates new lists, and
 
 The helper stops when `i == len(remaining)`, meaning all choices at the current level have been tried.
 
-New lists keep each caller's state separate, so no shared-list changes need to be undone. The permutation engine uses recursive calls without `for` or `while` loops. Input collection and validation use loops.
+New lists keep each caller's state separate, so no shared-list changes need to be undone. The permutation engine uses recursive calls without `for` or `while` loops. Input collection, validation, duplicate-name labeling, and the menu use loops outside the permutation engine.
 
 ## Input policies and error handling
 
@@ -126,13 +126,44 @@ These are implementation choices for the interactive version:
 | Leading, trailing, or repeated whitespace | Remove outer whitespace and use one space between words |
 | Multiword name | Keep the complete entered name as one list element |
 | One person | Print that person's name once |
-| Repeated names | Accept each occurrence as a separate person; repeated output lines are allowed |
+| Repeated names | Accept each occurrence as a separate person and assign fixed numbered labels, including the first occurrence |
 | End of input (`EOFError`), including at the menu | Print `Input ended. Goodbye!` and stop |
 | Ctrl+C (`KeyboardInterrupt`), including at the menu | Print `Cancelled. Goodbye!` and stop |
 
 Capitalization is preserved. The simplified implementation accepts any nonempty name text; it does not enforce English-only names or detailed character restrictions.
 
-Repeated labels are not removed or renamed. For example, Patrick, Patrick, and Sarah produce six positional orderings but only three different output strings.
+### Numbering repeated names
+
+After all names have been entered, `number_duplicate_names(nameList)` assigns labels before permutation generation. Only repeated names receive a number, including the first occurrence. For example, `Ali`, `Ali`, and `Sara` become `Ali [1]`, `Ali [2]`, and `Sara`.
+
+For comparison, the helper uses `lower()` to convert names to lowercase after whitespace normalization, so `Ali` and `ali` are treated as repeated names. It uses ordinary lists, `count()`, `append()`, and loops to find duplicates and choose available numbers. Each person's entered capitalization is preserved. Unique names stay unchanged. Numbers follow input order and stay with the same person in every permutation; they do not indicate a person's current position in the lineup. Numbering starts fresh for each new group.
+
+If a numbered label was itself entered as a name, the helper skips that label to avoid a collision. For example, `Ali`, `Ali`, and `Ali [1]` become `Ali [2]`, `Ali [3]`, and `Ali [1]`.
+
+Example session with repeated names:
+
+```text
+Welcome to the Name Permutations Program!
+Number of people: 3
+Person 1: Ali
+Person 2: Ali
+Person 3: Sara
+
+Permutations:
+Ali [1], Ali [2], Sara
+Ali [1], Sara, Ali [2]
+Ali [2], Ali [1], Sara
+Ali [2], Sara, Ali [1]
+Sara, Ali [1], Ali [2]
+Sara, Ali [2], Ali [1]
+
+Would you like to enter another group?
+1. Yes - enter a new number of people and names
+2. No - exit
+Choose 1 or 2 (or yes/no): 2
+
+Goodbye! Thank you for using the program.
+```
 
 If generation is interrupted, previously printed lines remain in the terminal.
 
@@ -147,7 +178,7 @@ For `n` distinct names, there are `n!` distinct orderings:
 | 5 | 120 |
 | 7 | 5,040 |
 
-These are mathematical counts, not measured runtimes. With repeated names, the program still prints `n!` positional orderings, but some output strings repeat.
+These are mathematical counts, not measured runtimes. With repeated names, fixed numbered labels distinguish the people, so the program still prints `n!` distinct labeled orderings.
 
 The program prints results as they are generated instead of storing every permutation. Recursive helper calls and new list copies still consume memory.
 
@@ -161,9 +192,12 @@ Suggested checks for the current implementation:
 2. Enter one person, such as Zeyad, and confirm that one ordering prints.
 3. Enter an invalid count and a blank name; confirm that the relevant prompt repeats.
 4. Enter a multiword name and confirm that it remains one person's name.
-5. Enter Patrick, Patrick, and Sarah; confirm that six lines print, including repeated strings.
+5. Enter Patrick, Patrick, and Sarah; confirm that six distinct lines print using `Patrick [1]`, `Patrick [2]`, and `Sarah`. Check that each label stays with the same person throughout the output.
 6. After the permutations, enter `1` and confirm that the program asks for a new count and new names.
 7. Enter an invalid menu answer, such as `maybe` or a blank answer; confirm that the menu prompt repeats without regenerating the previous output.
 8. Check that `yes` and `y` continue, and that `no` and `n` exit; also try uppercase answers and surrounding spaces.
 9. Enter `2` after a group and confirm that the goodbye message prints and the program stops.
 10. Check EOF handling and Ctrl+C in the terminal, including at the continue-or-exit prompt.
+11. Enter `Ali` and `ali`; confirm that `Ali [1]` and `ali [2]` appear.
+12. Enter `Ali`, `Ali`, and `Ali [1]`; confirm that the existing `Ali [1]` stays unchanged and the repeated names receive `Ali [2]` and `Ali [3]`.
+13. Start another group with repeated names and confirm that numbering starts fresh.
