@@ -1,7 +1,7 @@
 # Learning Activity 2: All Permutations of Names
 
 **Author:** Bahareh Mohamadtaheri  
-**Course:** DATA 5010 — Introduction to Data Science Programming  
+**Course:** DATA/CS 5010 — Introduction to Data Science Programming  
 **University:** Bowling Green State University
 
 ## Overview
@@ -16,8 +16,12 @@ The assignment specifies a list of one-word names. This version adds interactive
 
 | File | Purpose |
 | --- | --- |
-| `name_permutations.py` | Interactive input and recursive permutation generation |
-| `README.md` | Project description, execution instructions, and behavior |
+| `name_permutations.py` | Interactive input and recursive permutation generation using the nested helper |
+| `benchmark_runtime_memory.py` | Measure the main implementation with 3 through 7 distinct names |
+| `compare_permutation_runtime_memory.py` | Compare the recursive helper, `for + recursion`, and `while + recursion` with 7 distinct names |
+| `runtime_memory_results.txt` | Saved laptop results for the 3–7-person measurements |
+| `permutation_comparison_results.txt` | Laptop results for the three-version comparison |
+| `README.md` | Project description, execution instructions, behavior, and measurement methods |
 
 ## Requirements and execution
 
@@ -183,6 +187,77 @@ These are mathematical counts, not measured runtimes. With repeated names, fixed
 The program prints results as they are generated instead of storing every permutation. Recursive helper calls and new list copies still consume memory.
 
 There is no explicit maximum person count. Factorial output growth quickly makes large inputs impractical, and large runs can exceed Python's recursion or resource limits. The program handles the listed input problems and interruptions; it does not catch every possible failure.
+
+## Performance measurements
+
+The two measurement scripts are separate from the interactive program. Keep all three `.py` files in the same folder. They use Python's standard library and require no additional packages. Importing `name_permutations.py` does not start its interactive menu.
+
+Run the commands below from the project folder. If needed, use `python3` instead of `python`.
+
+### 1. Measure the main implementation for different group sizes
+
+```bash
+python benchmark_runtime_memory.py
+```
+
+This script imports the main `print_permutations()` function and measures it with 3, 4, 5, 6, and 7 distinct names. It prints the results and writes `laptop_results.txt` in the current working folder. The repository's saved report is named `runtime_memory_results.txt`; the script's generated filename remains `laptop_results.txt`.
+
+Reported laptop measurements from the saved results file:
+
+| People (n) | Orderings (n!) | Median runtime (ms) | Median peak traced allocation above baseline (KiB) |
+| ---: | ---: | ---: | ---: |
+| 3 | 6 | 0.004 | 5.3 |
+| 4 | 24 | 0.018 | 19.5 |
+| 5 | 120 | 0.171 | 88.5 |
+| 6 | 720 | 0.780 | 163.7 |
+| 7 | 5,040 | 5.645 | 194.7 |
+
+The ordering counts are mathematical values. Runtime and allocation are measurements.
+
+### 2. Compare three implementations
+
+```bash
+python compare_permutation_runtime_memory.py
+```
+
+This script uses the same seven distinct names for every version: Bahareh, Henrietta, Sarah, Patrick, Zeyad, Alex, and Morgan. Each version produces 5,040 orderings.
+
+- **Recursive helper:** imports the main program's `print_permutations()` function, which uses the nested `try_choice(i)` helper.
+- **for + recursion:** uses a `for` loop to explore the choices at each level, then makes recursive calls for the branches.
+- **while + recursion:** uses a `while` loop to explore the choices at each level, then makes recursive calls for the branches.
+
+All three versions use recursion for permutation generation and create new lists for each branch. The alternative versions are inside the comparison script. They do not replace the main program's loop-free permutation engine.
+
+The script prints its report and writes `permutation_comparison_results.txt` in the current working folder. A new run replaces that output file.
+
+Reported laptop measurements from `permutation_comparison_results.txt`:
+
+| Version | Median runtime (ms) | Median peak traced allocation above baseline (KiB) |
+| --- | ---: | ---: |
+| Recursive helper | 5.548 | 223.9 |
+| for + recursion | 2.319 | 26.1 |
+| while + recursion | 2.357 | 25.8 |
+
+In this experiment, both loop versions had lower median runtime and traced allocation than the helper version. The `for` and `while` times are close. These reported medians do not establish a consistent winner between them.
+
+### Measurement method and interpretation
+
+Both reports identify Python 3.14.7 on Darwin (macOS). The scripts record the Python version and operating system each time they run. Results can change on another computer or between runs.
+
+Both scripts use:
+
+- `time.perf_counter()` for runtime, reported in milliseconds as the median of seven individual runs.
+- `tracemalloc` for memory, reported as the median of five peak traced Python allocations above the pre-call baseline.
+- Separate time and memory measurements, so memory tracing does not run during timing.
+- Buffered output to `os.devnull`, which discards the ordering text and excludes terminal display.
+
+Stream opening and closing are outside the measurements. Forming and printing the ordering text are inside the measured function call. Interactive input, duplicate labeling, and the menu are excluded. One KiB equals 1,024 bytes. Traced allocation is not total process RAM.
+
+The comparison script calls `gc.collect()` before every run, outside measurement, and resets the traced peak after recording the baseline. The group-size script does not explicitly perform those cleanup steps. Treat their results as separate experiments, including their different reported helper-memory values.
+
+These scripts measure individual runs, not batch means. The comparison report contains medians but does not include the raw trial values, so it does not support claims about overlapping timing ranges. The group-size report includes its raw samples.
+
+The scripts do not create charts or modify the program. Use the generated values when updating the presentation, and keep the result files with the corresponding code. These small experiments do not establish exact runtime or memory complexity. Factorial output growth remains the main practical limit.
 
 ## Manual verification
 
