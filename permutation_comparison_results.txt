@@ -1,0 +1,18 @@
+Python: 3.14.7
+System: Darwin
+
+Input: 7 distinct names, producing 5,040 orderings
+Version | Median runtime (ms) | Median peak allocation (KiB)
+Recursive helper | 5.548 | 223.9
+for + recursion | 2.319 | 26.1
+while + recursion | 2.357 | 25.8
+
+Runtime: median of 7 individual runs using time.perf_counter.
+Memory: median of 5 trials using tracemalloc, above baseline.
+Garbage collection occurs before each run, outside measurement.
+Output goes to a buffered null stream. Terminal display is excluded.
+Opening and closing the stream are outside measurement.
+Input, duplicate labeling and menu are excluded.
+1 KiB = 1,024 bytes. Traced allocations are not total process RAM.
+This method uses individual runs, not the old slide's batch means.
+Small timing differences can change between runs.
