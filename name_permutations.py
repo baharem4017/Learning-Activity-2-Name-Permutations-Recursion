@@ -2,7 +2,7 @@
 
 Run: python name_permutations.py
 Enter a positive number of people, one nonempty name or full name per line.
-Repeated names represent different people, so repeated output lines are valid.
+Repeated names receive fixed labels such as Ali [1] and Ali [2].
 The permutation engine uses recursion without for/while loops.
 After each group, choose whether to enter another group or exit.
 """
@@ -36,6 +36,28 @@ def read_names(count):
                 break
             print("Name cannot be empty. Please try again.")
     return nameList
+
+
+def number_duplicate_names(nameList):
+    """Use simple lists to number repeated names before generation."""
+    lower_names = []
+    for name in nameList:
+        lower_names.append(name.lower())
+
+    labeled_names = []
+    used_labels = []
+    for name in nameList:
+        label = name
+        if lower_names.count(name.lower()) > 1:
+            number = 1
+            label = f"{name} [{number}]"
+            while label.lower() in lower_names or label.lower() in used_labels:
+                number += 1
+                label = f"{name} [{number}]"
+
+        labeled_names.append(label)
+        used_labels.append(label.lower())
+    return labeled_names
 
 
 def print_permutations(chosen, remaining):
@@ -85,6 +107,7 @@ def main():
         while True:
             count = read_person_count()
             nameList = read_names(count)
+            nameList = number_duplicate_names(nameList)
             print("\nPermutations:")
             print_permutations([], nameList)
 
