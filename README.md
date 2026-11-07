@@ -35,13 +35,14 @@ If your system uses the `python3` command, run:
 python3 name_permutations.py
 ```
 
-Enter a positive whole number of people, then enter each person's name on a separate line. The program processes one group per run.
+Enter a positive whole number of people, then enter each person's name on a separate line. After displaying the permutations, choose whether to enter a new group or exit. You can process several groups in one run.
 
 ## Example session
 
-The following session uses three classmates:
+The following session generates permutations for three classmates, starts a new group with one person, and then exits:
 
 ```text
+Welcome to the Name Permutations Program!
 Number of people: 3
 Person 1: Bahareh
 Person 2: Henrietta
@@ -54,9 +55,42 @@ Henrietta, Bahareh, Sarah
 Henrietta, Sarah, Bahareh
 Sarah, Bahareh, Henrietta
 Sarah, Henrietta, Bahareh
+
+Would you like to enter another group?
+1. Yes - enter a new number of people and names
+2. No - exit
+Choose 1 or 2 (or yes/no): 1
+
+--- New Group ---
+Number of people: 1
+Person 1: Zeyad
+
+Permutations:
+Zeyad
+
+Would you like to enter another group?
+1. Yes - enter a new number of people and names
+2. No - exit
+Choose 1 or 2 (or yes/no): 2
+
+Goodbye! Thank you for using the program.
 ```
 
 For the five-person demonstration, enter `5`, followed by Bahareh, Henrietta, Sarah, Patrick, and Zeyad on separate lines. These five distinct names produce 120 orderings.
+
+## Continue or exit menu
+
+After each group, `ask_to_continue()` displays a menu:
+
+| Accepted answer | Action |
+| --- | --- |
+| `1`, `yes`, or `y` | Start a new group and ask for the number of people and all names again |
+| `2`, `no`, or `n` | Print `Goodbye! Thank you for using the program.` and exit |
+| Any other answer, including a blank answer | Display an error and ask for a valid menu choice again |
+
+Menu answers are case-insensitive, and leading or trailing whitespace is ignored. For example, `YES` and ` yes ` both start another group.
+
+Each new group starts with a fresh name list. `main()` repeats the input and generation steps until the user chooses to exit. The menu and input loops are separate from the recursive permutation engine.
 
 ## How the recursion works
 
@@ -93,8 +127,8 @@ These are implementation choices for the interactive version:
 | Multiword name | Keep the complete entered name as one list element |
 | One person | Print that person's name once |
 | Repeated names | Accept each occurrence as a separate person; repeated output lines are allowed |
-| End of input (`EOFError`) | Print `Input ended. Exiting.` and stop |
-| Ctrl+C (`KeyboardInterrupt`) | Print `Cancelled.` and stop |
+| End of input (`EOFError`), including at the menu | Print `Input ended. Goodbye!` and stop |
+| Ctrl+C (`KeyboardInterrupt`), including at the menu | Print `Cancelled. Goodbye!` and stop |
 
 Capitalization is preserved. The simplified implementation accepts any nonempty name text; it does not enforce English-only names or detailed character restrictions.
 
@@ -128,6 +162,8 @@ Suggested checks for the current implementation:
 3. Enter an invalid count and a blank name; confirm that the relevant prompt repeats.
 4. Enter a multiword name and confirm that it remains one person's name.
 5. Enter Patrick, Patrick, and Sarah; confirm that six lines print, including repeated strings.
-6. Check EOF handling and Ctrl+C in the terminal.
-
-
+6. After the permutations, enter `1` and confirm that the program asks for a new count and new names.
+7. Enter an invalid menu answer, such as `maybe` or a blank answer; confirm that the menu prompt repeats without regenerating the previous output.
+8. Check that `yes` and `y` continue, and that `no` and `n` exit; also try uppercase answers and surrounding spaces.
+9. Enter `2` after a group and confirm that the goodbye message prints and the program stops.
+10. Check EOF handling and Ctrl+C in the terminal, including at the continue-or-exit prompt.
