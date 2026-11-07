@@ -1,10 +1,12 @@
-"""Name permutations: a simple interactive version of DATA/CS 5010 Q1.
+"""Name permutations: an interactive version of DATA/CS 5010 Q1.
 
 Run: python name_permutations.py
 Enter a positive number of people, one nonempty name or full name per line.
 Repeated names represent different people, so repeated output lines are valid.
 The permutation engine uses recursion without for/while loops.
+After each group, choose whether to enter another group or exit.
 """
+
 
 def read_person_count():
     """Ask for a positive integer, without an explicit upper limit."""
@@ -58,19 +60,44 @@ def print_permutations(chosen, remaining):
     try_choice(0)
 
 
+def ask_to_continue():
+    """Return True for another group or False to exit."""
+    print("\nWould you like to enter another group?")
+    print("1. Yes - enter a new number of people and names")
+    print("2. No - exit")
+
+    while True:
+        choice = input("Choose 1 or 2 (or yes/no): ").strip().lower()
+
+        if choice in ("1", "yes", "y"):
+            return True
+        if choice in ("2", "no", "n"):
+            return False
+
+        print("Invalid choice. Please enter 1 (yes) or 2 (no).")
+
+
 def main():
-    """Read one group and print its permutations."""
+    """Generate permutations for each group until the user chooses to exit."""
+    print("Welcome to the Name Permutations Program!")
+
     try:
-        count = read_person_count()
-        nameList = read_names(count)
-        print("\nPermutations:")
-        print_permutations([], nameList)
+        while True:
+            count = read_person_count()
+            nameList = read_names(count)
+            print("\nPermutations:")
+            print_permutations([], nameList)
+
+            if not ask_to_continue():
+                print("\nGoodbye! Thank you for using the program.")
+                break
+
+            print("\n--- New Group ---")
     except EOFError:
-        print("\nInput ended. Exiting.")
+        print("\nInput ended. Goodbye!")
     except KeyboardInterrupt:
-        print("\nCancelled.")
+        print("\nCancelled. Goodbye!")
 
 
 if __name__ == "__main__":
     main()
-
