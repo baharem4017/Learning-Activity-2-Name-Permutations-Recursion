@@ -1,7 +1,7 @@
 # Learning Activity 2: All Permutations of Names
 
 **Author:** Bahareh Mohamadtaheri  
-**Course:** DATA/CS 5010 — Introduction to Data Science Programming  
+**Course:** DATA 5010 — Introduction to Data Science Programming  
 **University:** Bowling Green State University
 
 ## Overview
