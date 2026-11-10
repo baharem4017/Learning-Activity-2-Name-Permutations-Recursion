@@ -125,16 +125,20 @@ These are implementation choices for the interactive version:
 
 | Situation | Behavior |
 | --- | --- |
-| Invalid person count, such as `0`, `-1`, or `abc` | Ask again for a positive whole number |
+| Invalid person count, such as `0`, `-1`, `3.5`, or `abc` | Ask again for a positive whole number; there is no explicit maximum count |
 | Blank or whitespace-only name | Ask again for the same person's name |
+| Name longer than 30 characters (after whitespace normalization) | Show a length error and ask again |
+| Digits, emojis, commas, brackets, or other invalid symbols in a name | Reject the name and ask again |
+| Valid name characters | English letters (A-Z, a-z), spaces between words, and hyphens or apostrophes placed between English letters |
 | Leading, trailing, or repeated whitespace | Remove outer whitespace and use one space between words |
 | Multiword name | Keep the complete entered name as one list element |
 | One person | Print that person's name once |
 | Repeated names | Accept each occurrence as a separate person and assign fixed numbered labels, including the first occurrence |
 | End of input (`EOFError`), including at the menu | Print `Input ended. Goodbye!` and stop |
 | Ctrl+C (`KeyboardInterrupt`), including at the menu | Print `Cancelled. Goodbye!` and stop |
+| Python recursion-depth limit (`RecursionError`) during generation | Print `Python recursion limit reached. Try a smaller group. Goodbye!` and stop |
 
-Capitalization is preserved. The simplified implementation accepts any nonempty name text; it does not enforce English-only names or detailed character restrictions.
+Capitalization is preserved. Names must use English letters only, with optional spaces between words and internal hyphens or apostrophes (examples: `Mary Jane`, `Anne-Marie`, and `O'Connor`). Numbers, emojis, commas, brackets, and other symbols are rejected. Input whitespace is normalized before the 30-character limit is checked. Invalid names are requested again for the same person.
 
 ### Numbering repeated names
 
@@ -142,7 +146,7 @@ After all names have been entered, `number_duplicate_names(nameList)` assigns la
 
 For comparison, the helper uses `lower()` to convert names to lowercase after whitespace normalization, so `Ali` and `ali` are treated as repeated names. It uses ordinary lists, `count()`, `append()`, and loops to find duplicates and choose available numbers. Each person's entered capitalization is preserved. Unique names stay unchanged. Numbers follow input order and stay with the same person in every permutation; they do not indicate a person's current position in the lineup. Numbering starts fresh for each new group.
 
-If a numbered label was itself entered as a name, the helper skips that label to avoid a collision. For example, `Ali`, `Ali`, and `Ali [1]` become `Ali [2]`, `Ali [3]`, and `Ali [1]`.
+The interactive input rules do not allow brackets or digits in entered names, so a user cannot type a pre-numbered label such as `Ali [1]`. Bracketed numbers are added automatically by `number_duplicate_names()` only after valid names have been entered.
 
 Example session with repeated names:
 
@@ -186,7 +190,7 @@ These are mathematical counts, not measured runtimes. With repeated names, fixed
 
 The program prints results as they are generated instead of storing every permutation. Recursive helper calls and new list copies still consume memory.
 
-There is no explicit maximum person count. Factorial output growth quickly makes large inputs impractical, and large runs can exceed Python's recursion or resource limits. The program handles the listed input problems and interruptions; it does not catch every possible failure.
+There is no explicit maximum person count. Factorial output growth quickly makes large inputs impractical, and large runs can exceed Python's recursion or resource limits. The program handles the listed input problems, interruptions, and `RecursionError`; it does not catch every possible failure.
 
 ## Performance measurements
 
@@ -200,7 +204,7 @@ Run the commands below from the project folder. If needed, use `python3` instead
 python benchmark_runtime_memory.py
 ```
 
-This script imports the main `print_permutations()` function and measures it with 3, 4, 5, 6, and 7 distinct names. It prints the results and writes `laptop_results.txt` in the current working folder. The repository's saved report is named `runtime_memory_results.txt`; the script's generated filename remains `laptop_results.txt`.
+This script imports the main `print_permutations()` function and measures it with 3, 4, 5, 6, and 7 distinct names. It prints the median results and writes `runtime_memory_results.txt` in the current working folder. The generated report also records Python version, operating system, seven individual time samples and five memory samples for each group size, plus measurement notes. A new run replaces that output file.
 
 Reported laptop measurements from the saved results file:
 
@@ -255,7 +259,7 @@ Stream opening and closing are outside the measurements. Forming and printing th
 
 The comparison script calls `gc.collect()` before every run, outside measurement, and resets the traced peak after recording the baseline. The group-size script does not explicitly perform those cleanup steps. Treat their results as separate experiments, including their different reported helper-memory values.
 
-These scripts measure individual runs, not batch means. The comparison report contains medians but does not include the raw trial values, so it does not support claims about overlapping timing ranges. The group-size report includes its raw samples.
+These scripts measure individual runs, not batch means. The comparison report contains medians but does not include the raw trial values, so it does not support claims about overlapping timing ranges. The group-size report includes its seven time samples and five memory samples for each group size.
 
 The scripts do not create charts or modify the program. Use the generated values when updating the presentation, and keep the result files with the corresponding code. These small experiments do not establish exact runtime or memory complexity. Factorial output growth remains the main practical limit.
 
@@ -274,5 +278,9 @@ Suggested checks for the current implementation:
 9. Enter `2` after a group and confirm that the goodbye message prints and the program stops.
 10. Check EOF handling and Ctrl+C in the terminal, including at the continue-or-exit prompt.
 11. Enter `Ali` and `ali`; confirm that `Ali [1]` and `ali [2]` appear.
-12. Enter `Ali`, `Ali`, and `Ali [1]`; confirm that the existing `Ali [1]` stays unchanged and the repeated names receive `Ali [2]` and `Ali [3]`.
-13. Start another group with repeated names and confirm that numbering starts fresh.
+12. Enter `123`, `John123`, an emoji, `John!`, or `Ali [1]` as a name; confirm that each is rejected and the same person is prompted again.
+13. Enter a name longer than 30 characters; confirm that it is rejected, then enter exactly 30 valid letters and confirm acceptance.
+14. Try valid names such as `Mary Jane`, `Anne-Marie`, and `O'Connor`; confirm that each is accepted. Try `-Ali`, `Ali-`, or `Ali--Sara`; confirm that invalid hyphen placement is rejected.
+15. Enter names with extra spaces and confirm they are normalized.
+16. Start another group with repeated names and confirm that numbering starts fresh.
+17. If checking recursion-depth handling, use a controlled test or simulated `RecursionError` rather than printing an impractically large number of permutations.
