@@ -94,6 +94,7 @@ def main():
     print(report)
     with open("permutation_comparison_results.txt", "w", encoding="utf-8") as file:
         file.write(report)
+    print("Done! Open permutation_comparison_results.txt in the working folder of your project.")
 
 
 if __name__ == "__main__":
