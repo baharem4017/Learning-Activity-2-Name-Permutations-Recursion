@@ -1,11 +1,10 @@
-"""Name permutations: an interactive version of DATA/CS 5010 Q1.
+"""Generate all name orderings using recursion.
 
 Run: python name_permutations.py
-Enter a positive number of people, one nonempty name or full name per line.
-Repeated names receive fixed labels such as Ali [1] and Ali [2].
-The permutation engine uses recursion without for/while loops.
-After each group, choose whether to enter another group or exit.
+Enter a positive number of people and one name per person.
 """
+
+MAX_NAME_LENGTH = 30
 
 
 def read_person_count():
@@ -22,24 +21,69 @@ def read_person_count():
         print("Please enter a number greater than zero.")
 
 
+def is_valid_name(name):
+    """Allow English letters, spaces, and internal hyphens/apostrophes."""
+    if not name or len(name) > MAX_NAME_LENGTH:
+        return False
+
+    for i in range(len(name)):
+        char = name[i]
+        is_letter = ("A" <= char <= "Z") or ("a" <= char <= "z")
+
+        if is_letter:
+            continue
+
+        if char == " ":
+            # A space must separate two letters.
+            if i == 0 or i == len(name) - 1:
+                return False
+            previous = name[i - 1]
+            following = name[i + 1]
+            previous_ok = ("A" <= previous <= "Z") or ("a" <= previous <= "z")
+            following_ok = ("A" <= following <= "Z") or ("a" <= following <= "z")
+            if not previous_ok or not following_ok:
+                return False
+            continue
+
+        if char == "-" or char == "'":
+            # Hyphens/apostrophes must be between English letters.
+            if i == 0 or i == len(name) - 1:
+                return False
+            previous = name[i - 1]
+            following = name[i + 1]
+            previous_ok = ("A" <= previous <= "Z") or ("a" <= previous <= "z")
+            following_ok = ("A" <= following <= "Z") or ("a" <= following <= "z")
+            if not previous_ok or not following_ok:
+                return False
+            continue
+
+        return False
+
+    return True
+
+
 def read_names(count):
-    """Read each person's name, retrying only when the name is empty."""
+    """Ask again if a name is empty or invalid."""
     nameList = []
     for number in range(1, count + 1):
         while True:
             raw = input(f"Person {number}: ")
-            # Trim outer whitespace and use one space between words.
             name = " ".join(raw.split())
 
-            if name:
+            if not name:
+                print("Name cannot be empty. Please try again.")
+            elif len(name) > MAX_NAME_LENGTH:
+                print(f"Name is too long (maximum {MAX_NAME_LENGTH} characters).")
+            elif not is_valid_name(name):
+                print("Use English letters only. Spaces, internal hyphens (-), and apostrophes (') are allowed; no numbers or other symbols.")
+            else:
                 nameList.append(name)
                 break
-            print("Name cannot be empty. Please try again.")
     return nameList
 
 
 def number_duplicate_names(nameList):
-    """Use simple lists to number repeated names before generation."""
+    """Number repeated names, ignoring differences in capitalization."""
     lower_names = []
     for name in nameList:
         lower_names.append(name.lower())
@@ -61,21 +105,16 @@ def number_duplicate_names(nameList):
 
 
 def print_permutations(chosen, remaining):
-    """Print all positional permutations in the original choice order."""
-    # Base case: this ordering is complete.
+    """Use recursion to print each complete ordering."""
     if not remaining:
         print(", ".join(chosen))
         return
 
     def try_choice(i):
-        # Helper base case: all choices at this level have been tried.
         if i == len(remaining):
             return
-
         new_chosen = chosen + [remaining[i]]
         new_remaining = remaining[:i] + remaining[i + 1:]
-
-        # Complete this branch before moving to the next choice.
         print_permutations(new_chosen, new_remaining)
         try_choice(i + 1)
 
@@ -83,26 +122,22 @@ def print_permutations(chosen, remaining):
 
 
 def ask_to_continue():
-    """Return True for another group or False to exit."""
+    """Ask whether the user wants another group."""
     print("\nWould you like to enter another group?")
     print("1. Yes - enter a new number of people and names")
     print("2. No - exit")
 
     while True:
         choice = input("Choose 1 or 2 (or yes/no): ").strip().lower()
-
         if choice in ("1", "yes", "y"):
             return True
         if choice in ("2", "no", "n"):
             return False
-
         print("Invalid choice. Please enter 1 (yes) or 2 (no).")
 
 
 def main():
-    """Generate permutations for each group until the user chooses to exit."""
     print("Welcome to the Name Permutations Program!")
-
     try:
         while True:
             count = read_person_count()
@@ -114,12 +149,13 @@ def main():
             if not ask_to_continue():
                 print("\nGoodbye! Thank you for using the program.")
                 break
-
             print("\n--- New Group ---")
     except EOFError:
         print("\nInput ended. Goodbye!")
     except KeyboardInterrupt:
         print("\nCancelled. Goodbye!")
+    except RecursionError:
+        print("\nPython recursion limit reached. Try a smaller group. Goodbye!")
 
 
 if __name__ == "__main__":
