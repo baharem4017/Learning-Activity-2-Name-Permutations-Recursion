@@ -261,7 +261,6 @@ The comparison script calls `gc.collect()` before every run, outside measurement
 
 These scripts measure individual runs, not batch means. The comparison report contains medians but does not include the raw trial values, so it does not support claims about overlapping timing ranges. The group-size report includes its seven time samples and five memory samples for each group size.
 
-The scripts do not create charts or modify the program. Use the generated values when updating the presentation, and keep the result files with the corresponding code. These small experiments do not establish exact runtime or memory complexity. Factorial output growth remains the main practical limit.
 
 ## Manual verification
 
